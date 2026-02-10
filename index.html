@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSSRA | Top 5 Leaderboard</title>
+    <style>
+        :root {
+            --primary-navy: #1a367c;
+            --accent-magenta: #d4145a;
+            --bg-light: #f4f7f9;
+            --white: #ffffff;
+            --gold: #d4af37; --silver: #a8a8a8; --bronze: #cd7f32;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-light);
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .logo-box { 
+            background: var(--white); padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; display: inline-block;
+        }
+        .logo-box img { max-width: 220px; height: auto; }
+
+        h1 { color: var(--primary-navy); font-size: 2.2rem; margin-bottom: 30px; }
+
+        .leader-card {
+            background: var(--white); border-radius: 20px; padding: 30px;
+            box-shadow: 0 15px 35px rgba(26, 54, 124, 0.1);
+        }
+
+        .name-row {
+            display: flex; align-items: center; padding: 20px;
+            border-bottom: 1px solid #f0f4f8;
+        }
+        .name-row:last-child { border-bottom: none; }
+
+        .rank-circle {
+            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; border-radius: 50%; margin-right: 20px; background: #f0f4f8; font-size: 1.1rem;
+        }
+        .rank-1 .rank-circle { background: var(--gold); color: white; transform: scale(1.1); }
+        .rank-2 .rank-circle { background: var(--silver); color: white; }
+        .rank-3 .rank-circle { background: var(--bronze); color: white; }
+
+        .name-info { text-align: left; flex-grow: 1; }
+        .name-val { font-size: 1.2rem; font-weight: 700; color: var(--primary-navy); }
+        
+        .star-count {
+            color: var(--accent-magenta); font-weight: 800; font-size: 1.3rem;
+        }
+
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-navy);
+            border-radius: 50%; margin: 50px auto; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-box"><img src="image_64d822.jpg" alt="WSSRA Logo"></div>
+    <h1>Top 5 Leaders</h1>
+
+    <div id="loading"><div class="spinner"></div></div>
+
+    <div id="leaderboard" class="leader-card" style="display: none;">
+        <div id="list"></div>
+    </div>
+</div>
+
+<script>
+    const SHEET_ID = '1K4t3ER3aP9a-1JS0az8JiMfKVNa9YgnY9JmwGaasiH4';
+    
+    window.onload = () => {
+        const script = document.createElement('script');
+        window.google = { visualization: { Query: { setResponse: r => {
+            const data = r.table.rows.map(row => row.c[0] ? String(row.c[0].v).trim().toUpperCase() : '').filter(n => n && n !== 'NAME');
+            const counts = {};
+            data.forEach(n => counts[n] = (counts[n] || 0) + 1);
+            const top5 = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('leaderboard').style.display = 'block';
+
+            const container = document.getElementById('list');
+            top5.forEach(([name, count], i) => {
+                const div = document.createElement('div');
+                div.className = `name-row rank-${i+1}`;
+                div.innerHTML = `
+                    <div class="rank-circle">${i+1}</div>
+                    <div class="name-info"><div class="name-val">${name}</div></div>
+                    <div class="star-count">${count} ⭐</div>
+                `;
+                container.appendChild(div);
+            });
+        }}}};
+        script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq&gid=0`;
+        document.body.appendChild(script);
+    };
+</script>
+</body>
+</html>
